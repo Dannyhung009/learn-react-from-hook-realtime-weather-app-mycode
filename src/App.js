@@ -128,8 +128,46 @@ const Refresh = styled.div`
 `;
 
 const App = () => {
+    const AUTHORIZATION_KEY = 'CWB-8127F782-92D2-4CBB-9023-AC3C39581F2C';
+    const LOCATION_NAME = '臺北';// STEP 1：定義 LOCATION_NAME %E8%87%BA%E5%8C%97
     const [currentTheme, setCurrentTheme] = useState('light');
 
+    // STEP 2：將 AUTHORIZATION_KEY 和 LOCATION_NAME 帶入 API 請求中
+    const handleClick = () => {
+        fetch(
+            `https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATION_KEY}&StationName=${LOCATION_NAME}`
+            // `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME}`
+        )
+            .then((response) => response.json())
+            .then((data) => {
+                console.log('data', data);
+                // STEP 1：定義 `locationData` 把回傳的資料中會用到的部分取出來
+                const locationData = data.records.Station[0];
+                // STEP 2：將風速（WDSD）和氣溫（TEMP）的資料取出
+                // const weatherElements = locationData.WeatherElement.reduce(
+                //     (neededElements, item) => {
+                //         if (['WindSpeed'].includes(item.elementName)) {
+                //             neededElements[item.elementName] = item.elementValue;
+                //         }
+                //         return neededElements;
+                //     },
+                //     {}
+                // );
+                // console.log(`weatherElements= ${weatherElements}`)
+
+                // STEP 3：要使用到 React 組件中的資料
+                setCurrentWeather({
+                    observationTime: locationData.ObsTime.DateTime,
+                    locationName: locationData.StationName,
+                    temperature: '30',
+                    // windSpeed: '4.9',
+                    windSpeed: locationData.WeatherElement.WindSpeed,
+                    // description: '多雲時晴',
+                    description: locationData.WeatherElement.Weather,
+                    rainPossibility: 60,
+                });
+            });
+    };
     // STEP 2：定義會使用到的資料狀態
     const [currentWeather, setCurrentWeather] = useState({
         observationTime: '2020-12-12 22:10:00',
@@ -159,7 +197,8 @@ const App = () => {
                     <Rain>
                         <RainIcon/> {currentWeather.rainPossibility}%
                     </Rain>
-                    <Refresh>
+                    {/* STEP 2：綁定 onClick 時會呼叫 handleClick 方法 */}
+                    <Refresh onClick={handleClick}>
                     {/*    最後觀測時間：*/}
                     {/*    {new Intl.DateTimeFormat('zh-TW', {*/}
                     {/*    hour: 'numeric',*/}
@@ -169,7 +208,7 @@ const App = () => {
                         {new Intl.DateTimeFormat('zh-TW', {
                             hour: 'numeric',
                             minute: 'numeric',
-                        }).format(dayjs(currentWeather.observationTime))}{' '}
+                        }).format(dayjs(currentWeather.observationTime))}{' '} <RefreshIcon/>
                     </Refresh>
                 </WeatherCard>
             </Container>
