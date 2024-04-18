@@ -8,6 +8,7 @@ import {ReactComponent as AirFlowIcon} from './images/airFlow.svg';
 import {ReactComponent as RainIcon} from './images/rain.svg';
 import {ReactComponent as RefreshIcon} from './images/refresh.svg';
 
+import { ReactComponent as LoadingIcon } from './images/loading.svg';
 
 const theme = {
     light: {
@@ -124,6 +125,18 @@ const Refresh = styled.div`
         width: 15px;
         height: 15px;
         cursor: pointer;
+        /* STEP 2：使用 rotate 動畫效果在 svg 圖示上 */
+        animation: rotate infinite 1.5s linear;
+    }
+
+    /* STEP 1：定義旋轉的動畫效果，並取名為 rotate */
+    @keyframes rotate {
+        from {
+            transform: rotate(360deg);
+        }
+        to {
+            transform: rotate(0deg);
+        }
     }
 `;
 
@@ -138,6 +151,10 @@ const App = () => {
 
     };
     const fetchCurrentWeather = () => {
+        setCurrentWeather((prevState) => ({
+            ...prevState,
+            isLoading: true,
+        }));
         fetch(
             `https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATION_KEY}&StationName=${LOCATION_NAME}`
             // `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME}`
@@ -169,6 +186,7 @@ const App = () => {
                     // description: '多雲時晴',
                     description: locationData.WeatherElement.Weather,
                     rainPossibility: 60,
+                    isLoading: false, // 資料拉取完後，把 isLoading 設為 false
                 });
             });
     }
@@ -180,6 +198,7 @@ const App = () => {
         windSpeed: 3.6,
         temperature: 32.1,
         rainPossibility: 60,
+        isLoading: true,
     });
     // useEffect 中 console.log
     // useEffect(() => {
@@ -196,7 +215,8 @@ const App = () => {
             {/*theme={theme.dark}*/}
             <Container>
                 {/* JSX 中加入 console.log */}
-                {console.log('render')}
+                {/*{console.log('render')}*/}
+                {console.log(`render, isLoading: ${currentWeather.isLoading}`)}
                 <WeatherCard>
                     <Location>{currentWeather.locationName}</Location>
                     <Description>{currentWeather.description}</Description>
@@ -223,7 +243,9 @@ const App = () => {
                         {new Intl.DateTimeFormat('zh-TW', {
                             hour: 'numeric',
                             minute: 'numeric',
-                        }).format(dayjs(currentWeather.observationTime))}{' '} <RefreshIcon/>
+                        }).format(dayjs(currentWeather.observationTime))}{' '}
+                        {/*<RefreshIcon/>*/}
+                        {currentWeather.isLoading ? <LoadingIcon /> : <RefreshIcon />}
                     </Refresh>
                 </WeatherCard>
             </Container>
