@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import styled from '@emotion/styled';
 import {ThemeProvider} from '@emotion/react'
 import dayjs from 'dayjs';
@@ -128,12 +128,16 @@ const Refresh = styled.div`
 `;
 
 const App = () => {
+    console.log('invoke function component'); // 元件一開始加入 console.log
     const AUTHORIZATION_KEY = 'CWB-8127F782-92D2-4CBB-9023-AC3C39581F2C';
     const LOCATION_NAME = '臺北';// STEP 1：定義 LOCATION_NAME %E8%87%BA%E5%8C%97
     const [currentTheme, setCurrentTheme] = useState('light');
 
     // STEP 2：將 AUTHORIZATION_KEY 和 LOCATION_NAME 帶入 API 請求中
     const handleClick = () => {
+
+    };
+    const fetchCurrentWeather = () => {
         fetch(
             `https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATION_KEY}&StationName=${LOCATION_NAME}`
             // `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME}`
@@ -167,7 +171,7 @@ const App = () => {
                     rainPossibility: 60,
                 });
             });
-    };
+    }
     // STEP 2：定義會使用到的資料狀態
     const [currentWeather, setCurrentWeather] = useState({
         observationTime: '2020-12-12 22:10:00',
@@ -177,11 +181,22 @@ const App = () => {
         temperature: 32.1,
         rainPossibility: 60,
     });
+    // useEffect 中 console.log
+    // useEffect(() => {
+    //     // useEffect 中 console.log
+    //     console.log('execute function in useEffect');
+    // });
+    useEffect(() => {
+        console.log('execute function in useEffect');
+        fetchCurrentWeather();
+    }, []);
     return (
         <ThemeProvider theme={theme[currentTheme]}>
             {/*theme={theme[currentTheme]}*/}
             {/*theme={theme.dark}*/}
             <Container>
+                {/* JSX 中加入 console.log */}
+                {console.log('render')}
                 <WeatherCard>
                     <Location>{currentWeather.locationName}</Location>
                     <Description>{currentWeather.description}</Description>
@@ -198,7 +213,7 @@ const App = () => {
                         <RainIcon/> {currentWeather.rainPossibility}%
                     </Rain>
                     {/* STEP 2：綁定 onClick 時會呼叫 handleClick 方法 */}
-                    <Refresh onClick={handleClick}>
+                    <Refresh onClick={fetchCurrentWeather}>
                     {/*    最後觀測時間：*/}
                     {/*    {new Intl.DateTimeFormat('zh-TW', {*/}
                     {/*    hour: 'numeric',*/}
