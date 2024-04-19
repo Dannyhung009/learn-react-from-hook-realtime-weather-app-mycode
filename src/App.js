@@ -8,7 +8,7 @@ import {ReactComponent as AirFlowIcon} from './images/airFlow.svg';
 import {ReactComponent as RainIcon} from './images/rain.svg';
 import {ReactComponent as RefreshIcon} from './images/refresh.svg';
 
-import { ReactComponent as LoadingIcon } from './images/loading.svg';
+import {ReactComponent as LoadingIcon} from './images/loading.svg';
 
 const theme = {
     light: {
@@ -127,7 +127,7 @@ const Refresh = styled.div`
         cursor: pointer;
         /* STEP 2：使用 rotate 動畫效果在 svg 圖示上 */
         //animation: rotate infinite 1.5s linear;
-        animation-duration: ${({ isLoading }) => (isLoading ? '1.5s' : '0s')};
+        animation-duration: ${({isLoading}) => (isLoading ? '1.5s' : '0s')};
     }
 
     /* STEP 1：定義旋轉的動畫效果，並取名為 rotate */
@@ -152,7 +152,7 @@ const App = () => {
 
     };
     const fetchCurrentWeather = () => {
-        setCurrentWeather((prevState) => ({
+        setWeatherElement((prevState) => ({
             ...prevState,
             isLoading: true,
         }));
@@ -162,7 +162,7 @@ const App = () => {
         )
             .then((response) => response.json())
             .then((data) => {
-                console.log('data', data);
+                console.log('data1', data);
                 // STEP 1：定義 `locationData` 把回傳的資料中會用到的部分取出來
                 const locationData = data.records.Station[0];
                 // STEP 2：將風速（WDSD）和氣溫（TEMP）的資料取出
@@ -178,7 +178,8 @@ const App = () => {
                 // console.log(`weatherElements= ${weatherElements}`)
 
                 // STEP 3：要使用到 React 組件中的資料
-                setCurrentWeather({
+                setWeatherElement((prevState) => ({
+                    ...prevState,
                     observationTime: locationData.ObsTime.DateTime,
                     locationName: locationData.StationName,
                     temperature: '30',
@@ -188,18 +189,33 @@ const App = () => {
                     description: locationData.WeatherElement.Weather,
                     rainPossibility: 60,
                     isLoading: false, // 資料拉取完後，把 isLoading 設為 false
-                });
+                }));
             });
     }
+
     // STEP 2：定義會使用到的資料狀態
-    const [currentWeather, setCurrentWeather] = useState({
-        observationTime: '2020-12-12 22:10:00',
-        locationName: '臺北市',
-        description: '多雲時晴',
-        windSpeed: 3.6,
-        temperature: 32.1,
-        rainPossibility: 60,
+    // const [currentWeather, setCurrentWeather] = useState({
+    //     observationTime: '2020-12-12 22:10:00',
+    //     locationName: '臺北市',
+    //     description: '多雲時晴',
+    //     windSpeed: 3.6,
+    //     temperature: 32.1,
+    //     rainPossibility: 60,
+    //     isLoading: true,
+    // });
+    const [weatherElement, setWeatherElement] = useState({
+        observationTime: new Date(),
+        locationName: '',
+        temperature: 0,
+        windSpeed: 0,
+        description: '',
+        weatherCode: 0,
+        rainPossibility: 0,
+        comfortability: '',
         isLoading: true,
+        // comfortability: '舒適至悶熱',
+        // weatherCode: 0,
+        // isLoading: true,
     });
     // useEffect 中 console.log
     // useEffect(() => {
@@ -209,6 +225,7 @@ const App = () => {
     useEffect(() => {
         console.log('execute function in useEffect');
         fetchCurrentWeather();
+        fetchWeatherForecast();
     }, []);
     const {
         observationTime,
@@ -218,10 +235,59 @@ const App = () => {
         temperature,
         rainPossibility,
         isLoading,
-    } = currentWeather;
+        // description,
+        comfortability,
+    } = weatherElement;
 
+    const LOCATION_NAME_FORECAST = '臺北市';//%E8%87%BA%E5%8C%97%E5%B8%82
+    const fetchWeatherForecast = () => {
+        fetch(
+            `https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME_FORECAST}`
+            //`https://opendata.cwb.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME_FORECAST}`
+        )
+            .then((response) => response.json())
+            .then((data) => {
+                // const locationData = data.records.location[0];
+                // const weatherElements = locationData.weatherElement.reduce(
+                //     (neededElements, item) => {
+                //         if (['Wx', 'PoP', 'CI'].includes(item.elementName)) {
+                //             neededElements[item.elementName] = item.time[0].parameter;
+                //         }
+                //         return neededElements;
+                //     },
+                //     {}
+                // );
+                //
+                // setWeatherElement((prevState) => ({
+                //     ...prevState,
+                //     description: weatherElements.Wx.parameterName,
+                //     weatherCode: weatherElements.Wx.parameterValue,
+                //     rainPossibility: weatherElements.PoP.parameterName,
+                //     comfortability: weatherElements.CI.parameterName,
+                // }));
+                console.log(`data2`, data)
+                const locationData = data.records.location[0];
+                const weatherElements = locationData.weatherElement.reduce(
+                    (neededElements, item) => {
+                        if (['Wx', 'PoP', 'CI'].includes(item.elementName)) {
+                            neededElements[item.elementName] = item.time[0].parameter;
+                        }
+                        return neededElements;
+                    },
+                    {}
+                );
+                console.log(`weatherElements`, weatherElements)
 
+                setWeatherElement((prevState) => ({
+                    ...prevState,
+                    description: weatherElements.Wx.parameterName,
+                    weatherCode: weatherElements.Wx.parameterValue,
+                    rainPossibility: weatherElements.PoP.parameterName,
+                    comfortability: weatherElements.CI.parameterName,
+                }));
 
+            });
+    };
 
 
     return (
@@ -231,10 +297,10 @@ const App = () => {
             <Container>
                 {/* JSX 中加入 console.log */}
                 {/*{console.log('render')}*/}
-                {console.log(`render, isLoading: ${currentWeather.isLoading}`)}
+                {/*{console.log(`render, isLoading: ${isLoading}`)}*/}
                 <WeatherCard>
                     <Location>{locationName}</Location>
-                    <Description>{description}</Description>
+                    <Description>{description}{comfortability}</Description>
                     <CurrentWeather>
                         <Temperature>
                             {Math.round(temperature)} <Celsius>°C</Celsius>
@@ -248,19 +314,25 @@ const App = () => {
                         <RainIcon/> {rainPossibility}%
                     </Rain>
                     {/* STEP 2：綁定 onClick 時會呼叫 handleClick 方法 */}
-                    <Refresh onClick={fetchCurrentWeather}  isLoading={isLoading}>
-                    {/*    最後觀測時間：*/}
-                    {/*    {new Intl.DateTimeFormat('zh-TW', {*/}
-                    {/*    hour: 'numeric',*/}
-                    {/*    minute: 'numeric',*/}
-                    {/*}).format(dayjs(currentWeather.observationTime))}{' '} <RefreshIcon/>*/}
+                    <Refresh
+                        onClick={() => {
+                            fetchCurrentWeather();
+                            fetchWeatherForecast();
+
+                        }}
+                        isLoading={isLoading}>
+                        {/*    最後觀測時間：*/}
+                        {/*    {new Intl.DateTimeFormat('zh-TW', {*/}
+                        {/*    hour: 'numeric',*/}
+                        {/*    minute: 'numeric',*/}
+                        {/*}).format(dayjs(currentWeather.observationTime))}{' '} <RefreshIcon/>*/}
                         最後觀測時間：
                         {new Intl.DateTimeFormat('zh-TW', {
                             hour: 'numeric',
                             minute: 'numeric',
                         }).format(dayjs(observationTime))}{' '}
                         {/*<RefreshIcon/>*/}
-                        {isLoading ? <LoadingIcon /> : <RefreshIcon />}
+                        {isLoading ? <LoadingIcon/> : <RefreshIcon/>}
                     </Refresh>
                 </WeatherCard>
             </Container>
