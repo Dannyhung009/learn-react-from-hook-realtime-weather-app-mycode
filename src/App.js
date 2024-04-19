@@ -148,15 +148,15 @@ const App = () => {
     const [currentTheme, setCurrentTheme] = useState('light');
 
     // STEP 2：將 AUTHORIZATION_KEY 和 LOCATION_NAME 帶入 API 請求中
-    const handleClick = () => {
-
-    };
+    // const handleClick = () => {
+    //
+    // };
     const fetchCurrentWeather = () => {
-        setWeatherElement((prevState) => ({
-            ...prevState,
-            isLoading: true,
-        }));
-        fetch(
+        // setWeatherElement((prevState) => ({
+        //     ...prevState,
+        //     isLoading: true,
+        // }));
+        return fetch(
             `https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATION_KEY}&StationName=${LOCATION_NAME}`
             // `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME}`
         )
@@ -164,7 +164,7 @@ const App = () => {
             .then((data) => {
                 console.log('data1', data);
                 // STEP 1：定義 `locationData` 把回傳的資料中會用到的部分取出來
-                const locationData = data.records.Station[0];
+                // const locationData = data.records.Station[0];
                 // STEP 2：將風速（WDSD）和氣溫（TEMP）的資料取出
                 // const weatherElements = locationData.WeatherElement.reduce(
                 //     (neededElements, item) => {
@@ -177,19 +177,30 @@ const App = () => {
                 // );
                 // console.log(`weatherElements= ${weatherElements}`)
 
+                // STEP 1：定義 `locationData` 把回傳的資料中會用到的部分取出來
+                const locationData = data.records.Station[0];
                 // STEP 3：要使用到 React 組件中的資料
-                setWeatherElement((prevState) => ({
-                    ...prevState,
+                // setWeatherElement((prevState) => ({
+                //     ...prevState,
+                //     observationTime: locationData.ObsTime.DateTime,
+                //     locationName: locationData.StationName,
+                //     temperature: '30',
+                //     // windSpeed: '4.9',
+                //     windSpeed: locationData.WeatherElement.WindSpeed,
+                //     // description: '多雲時晴',
+                //     description: locationData.WeatherElement.Weather,
+                //     rainPossibility: 60,
+                //     isLoading: false, // 資料拉取完後，把 isLoading 設為 false
+                // }));
+                // 留意這裡加上 return 直接把 fetch API 回傳的 Promise 再回傳出去
+                // 把取得的資料內容回傳出去，而不是在這裡 setWeatherElement
+                return {
                     observationTime: locationData.ObsTime.DateTime,
-                    locationName: locationData.StationName,
-                    temperature: '30',
-                    // windSpeed: '4.9',
-                    windSpeed: locationData.WeatherElement.WindSpeed,
-                    // description: '多雲時晴',
-                    description: locationData.WeatherElement.Weather,
-                    rainPossibility: 60,
-                    isLoading: false, // 資料拉取完後，把 isLoading 設為 false
-                }));
+                    // locationName: locationData.locationName,
+                    // temperature: weatherElements.TEMP,
+                    temperature: locationData.WeatherElement.AirTemperature,
+                    // windSpeed: weatherElements.WDSD,
+                };
             });
     }
 
@@ -206,7 +217,7 @@ const App = () => {
     const [weatherElement, setWeatherElement] = useState({
         observationTime: new Date(),
         locationName: '',
-        temperature: 0,
+        temperature: '30',
         windSpeed: 0,
         description: '',
         weatherCode: 0,
@@ -222,10 +233,47 @@ const App = () => {
     //     // useEffect 中 console.log
     //     console.log('execute function in useEffect');
     // });
+    // useEffect(() => {
+    //     console.log('execute function in useEffect');
+    //     // fetchCurrentWeather();
+    //     // fetchWeatherForecast();
+    //     // STEP 1：在 useEffect 中定義 async function 取名為 fetchData
+    //     const fetchData = async () => {
+    //         // STEP 2：使用 Promise.all 搭配 await 等待兩個 API 都取得回應後才繼續
+    //         const data = await Promise.all([
+    //             fetchCurrentWeather(),
+    //             fetchWeatherForecast(),
+    //         ]);
+    //
+    //         // STEP 3：檢視取得的資料
+    //         console.log(data);
+    //     };
+    //
+    //     // STEP 4：再 useEffect 中呼叫 fetchData 方法
+    //     fetchData();
+    // }, []);
     useEffect(() => {
-        console.log('execute function in useEffect');
-        fetchCurrentWeather();
-        fetchWeatherForecast();
+        const fetchData = async () => {
+            // 在開始拉取資料前，先把 isLoading 的狀態改成 true
+            setWeatherElement((prevState) => ({
+                ...prevState,
+                isLoading: true,
+            }));
+            // 直接透過陣列的解構賦值來取出 Promise.all 回傳的資料
+            const [currentWeather, weatherForecast] = await Promise.all([
+                fetchCurrentWeather(),
+                fetchWeatherForecast(),
+            ]);
+
+            // 把取得的資料透過物件的解構賦值放入
+            setWeatherElement({
+                ...currentWeather,
+                ...weatherForecast,
+                isLoading: false,
+            });
+        };
+
+        fetchData();
     }, []);
     const {
         observationTime,
@@ -241,7 +289,7 @@ const App = () => {
 
     const LOCATION_NAME_FORECAST = '臺北市';//%E8%87%BA%E5%8C%97%E5%B8%82
     const fetchWeatherForecast = () => {
-        fetch(
+       return fetch(
             `https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME_FORECAST}`
             //`https://opendata.cwb.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME_FORECAST}`
         )
@@ -278,14 +326,21 @@ const App = () => {
                 );
                 console.log(`weatherElements`, weatherElements)
 
-                setWeatherElement((prevState) => ({
-                    ...prevState,
+                // setWeatherElement((prevState) => ({
+                //     ...prevState,
+                //     description: weatherElements.Wx.parameterName,
+                //     weatherCode: weatherElements.Wx.parameterValue,
+                //     rainPossibility: weatherElements.PoP.parameterName,
+                //     comfortability: weatherElements.CI.parameterName,
+                // }));
+                // 留意這裡加上 return 直接把 fetch API 回傳的 Promise 再回傳出去
+                // 把取得的資料內容回傳出去，而不是在這裡 setWeatherElement
+                return {
                     description: weatherElements.Wx.parameterName,
                     weatherCode: weatherElements.Wx.parameterValue,
                     rainPossibility: weatherElements.PoP.parameterName,
                     comfortability: weatherElements.CI.parameterName,
-                }));
-
+                };
             });
     };
 
@@ -303,7 +358,9 @@ const App = () => {
                     <Description>{description}{comfortability}</Description>
                     <CurrentWeather>
                         <Temperature>
-                            {Math.round(temperature)} <Celsius>°C</Celsius>
+                            {/*{Math.round(Number(temperature))}*/}
+                            {temperature} <Celsius>°C</Celsius>
+                            {console.log(`temperature`,temperature)}
                         </Temperature>
                         <DayCloudy/>
                     </CurrentWeather>
