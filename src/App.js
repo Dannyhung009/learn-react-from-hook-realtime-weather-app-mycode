@@ -3,12 +3,16 @@ import styled from '@emotion/styled';
 import { ThemeProvider } from '@emotion/react'
 import dayjs from 'dayjs';
 
-import { ReactComponent as DayCloudyIcon } from './images/day-cloudy.svg';
+
 import { ReactComponent as AirFlowIcon } from './images/airFlow.svg';
 import { ReactComponent as RainIcon } from './images/rain.svg';
 import { ReactComponent as RefreshIcon } from './images/refresh.svg';
 
 import { ReactComponent as LoadingIcon } from './images/loading.svg';
+
+
+// STEP 1：匯入 WeatherIcon 元件
+import WeatherIcon from './components/WeatherIcon';
 
 const theme = {
     light: {
@@ -107,9 +111,7 @@ const Rain = styled.div`
     }
 `;
 
-const DayCloudy = styled(DayCloudyIcon)`
-    flex-basis: 30%;
-`;
+
 
 const Refresh = styled.div`
     position: absolute;
@@ -412,7 +414,10 @@ const App = () => {
                             {temperature} <Celsius>°C</Celsius>
                             {console.log(`temperature`, temperature)}
                         </Temperature>
-                        <DayCloudy />
+                        {/* WeatherIcon */}
+                        {/* STEP 2：使用 WeatherIcon 元件 */}
+                        <WeatherIcon />
+                        {/* <DayCloudy /> */}
                     </CurrentWeather>
                     <AirFlow>
                         <AirFlowIcon /> {windSpeed} m/h
