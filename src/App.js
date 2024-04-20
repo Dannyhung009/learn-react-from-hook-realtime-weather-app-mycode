@@ -1,14 +1,14 @@
-import {useEffect, useState} from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import styled from '@emotion/styled';
-import {ThemeProvider} from '@emotion/react'
+import { ThemeProvider } from '@emotion/react'
 import dayjs from 'dayjs';
 
-import {ReactComponent as DayCloudyIcon} from './images/day-cloudy.svg';
-import {ReactComponent as AirFlowIcon} from './images/airFlow.svg';
-import {ReactComponent as RainIcon} from './images/rain.svg';
-import {ReactComponent as RefreshIcon} from './images/refresh.svg';
+import { ReactComponent as DayCloudyIcon } from './images/day-cloudy.svg';
+import { ReactComponent as AirFlowIcon } from './images/airFlow.svg';
+import { ReactComponent as RainIcon } from './images/rain.svg';
+import { ReactComponent as RefreshIcon } from './images/refresh.svg';
 
-import {ReactComponent as LoadingIcon} from './images/loading.svg';
+import { ReactComponent as LoadingIcon } from './images/loading.svg';
 
 const theme = {
     light: {
@@ -31,7 +31,7 @@ const theme = {
 };
 
 const Container = styled.div`
-    background-color: ${({theme}) => theme.backgroundColor};
+    background-color: ${({ theme }) => theme.backgroundColor};
     height: 100%;
     display: flex;
     align-items: center;
@@ -41,21 +41,21 @@ const Container = styled.div`
 const WeatherCard = styled.div`
     position: relative;
     min-width: 360px;
-    box-shadow: ${({theme}) => theme.boxShadow};
-    background-color: ${({theme}) => theme.foregroundColor};
+    box-shadow: ${({ theme }) => theme.boxShadow};
+    background-color: ${({ theme }) => theme.foregroundColor};
     box-sizing: border-box;
     padding: 30px 15px;
 `;
 
 const Location = styled.div`
     font-size: 28px;
-    color: ${({theme}) => theme.titleColor};
+    color: ${({ theme }) => theme.titleColor};
     margin-bottom: 20px;
 `;
 
 const Description = styled.div`
     font-size: 16px;
-    color: ${({theme}) => theme.textColor};
+    color: ${({ theme }) => theme.textColor};
     margin-bottom: 30px;
 `;
 
@@ -67,7 +67,7 @@ const CurrentWeather = styled.div`
 `;
 
 const Temperature = styled.div`
-    color: ${({theme}) => theme.temperatureColor};
+    color: ${({ theme }) => theme.temperatureColor};
     font-size: 96px;
     font-weight: 300;
     display: flex;
@@ -83,7 +83,7 @@ const AirFlow = styled.div`
     align-items: center;
     font-size: 16x;
     font-weight: 300;
-    color: ${({theme}) => theme.textColor};
+    color: ${({ theme }) => theme.textColor};
     margin-bottom: 20px;
 
     svg {
@@ -98,7 +98,7 @@ const Rain = styled.div`
     align-items: center;
     font-size: 16x;
     font-weight: 300;
-    color: ${({theme}) => theme.textColor};
+    color: ${({ theme }) => theme.textColor};
 
     svg {
         width: 25px;
@@ -118,7 +118,7 @@ const Refresh = styled.div`
     font-size: 12px;
     display: inline-flex;
     align-items: flex-end;
-    color: ${({theme}) => theme.textColor};
+    color: ${({ theme }) => theme.textColor};
 
     svg {
         margin-left: 10px;
@@ -127,7 +127,7 @@ const Refresh = styled.div`
         cursor: pointer;
         /* STEP 2：使用 rotate 動畫效果在 svg 圖示上 */
         //animation: rotate infinite 1.5s linear;
-        animation-duration: ${({isLoading}) => (isLoading ? '1.5s' : '0s')};
+        animation-duration: ${({ isLoading }) => (isLoading ? '1.5s' : '0s')};
     }
 
     /* STEP 1：定義旋轉的動畫效果，並取名為 rotate */
@@ -156,6 +156,7 @@ const App = () => {
         //     ...prevState,
         //     isLoading: true,
         // }));
+        // 留意這裡加上 return 直接把 fetch API 回傳的 Promise 再回傳出去
         return fetch(
             `https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATION_KEY}&StationName=${LOCATION_NAME}`
             // `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME}`
@@ -192,7 +193,7 @@ const App = () => {
                 //     rainPossibility: 60,
                 //     isLoading: false, // 資料拉取完後，把 isLoading 設為 false
                 // }));
-                // 留意這裡加上 return 直接把 fetch API 回傳的 Promise 再回傳出去
+
                 // 把取得的資料內容回傳出去，而不是在這裡 setWeatherElement
                 return {
                     observationTime: locationData.ObsTime.DateTime,
@@ -253,25 +254,25 @@ const App = () => {
     //     fetchData();
     // }, []);
     useEffect(() => {
-        const fetchData = async () => {
-            // 在開始拉取資料前，先把 isLoading 的狀態改成 true
-            setWeatherElement((prevState) => ({
-                ...prevState,
-                isLoading: true,
-            }));
-            // 直接透過陣列的解構賦值來取出 Promise.all 回傳的資料
-            const [currentWeather, weatherForecast] = await Promise.all([
-                fetchCurrentWeather(),
-                fetchWeatherForecast(),
-            ]);
+        // const fetchData = async () => {
+        //     // 在開始拉取資料前，先把 isLoading 的狀態改成 true
+        //     setWeatherElement((prevState) => ({
+        //         ...prevState,
+        //         isLoading: true,
+        //     }));
+        //     // 直接透過陣列的解構賦值來取出 Promise.all 回傳的資料
+        //     const [currentWeather, weatherForecast] = await Promise.all([
+        //         fetchCurrentWeather(),
+        //         fetchWeatherForecast(),
+        //     ]);
 
-            // 把取得的資料透過物件的解構賦值放入
-            setWeatherElement({
-                ...currentWeather,
-                ...weatherForecast,
-                isLoading: false,
-            });
-        };
+        //     // 把取得的資料透過物件的解構賦值放入
+        //     setWeatherElement({
+        //         ...currentWeather,
+        //         ...weatherForecast,
+        //         isLoading: false,
+        //     });
+        // };
 
         fetchData();
     }, []);
@@ -289,7 +290,8 @@ const App = () => {
 
     const LOCATION_NAME_FORECAST = '臺北市';//%E8%87%BA%E5%8C%97%E5%B8%82
     const fetchWeatherForecast = () => {
-       return fetch(
+        // 留意這裡加上 return 直接把 fetch API 回傳的 Promise 再回傳出去
+        return fetch(
             `https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME_FORECAST}`
             //`https://opendata.cwb.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME_FORECAST}`
         )
@@ -333,7 +335,7 @@ const App = () => {
                 //     rainPossibility: weatherElements.PoP.parameterName,
                 //     comfortability: weatherElements.CI.parameterName,
                 // }));
-                // 留意這裡加上 return 直接把 fetch API 回傳的 Promise 再回傳出去
+
                 // 把取得的資料內容回傳出去，而不是在這裡 setWeatherElement
                 return {
                     description: weatherElements.Wx.parameterName,
@@ -343,6 +345,54 @@ const App = () => {
                 };
             });
     };
+
+    // STEP 1：把 fetchData 從 useEffect 中搬出來
+    // const fetchData = async () => {
+    //     // 在開始拉取資料前，先把 isLoading 的狀態改成 true
+    //     setWeatherElement((prevState) => ({
+    //         ...prevState,
+    //         isLoading: true,
+    //     }));
+    //     // 直接透過陣列的解構賦值來取出 Promise.all 回傳的資料
+    //     const [currentWeather, weatherForecast] = await Promise.all([
+    //         fetchCurrentWeather(),
+    //         fetchWeatherForecast(),
+    //     ]);
+
+    //     // 把取得的資料透過物件的解構賦值放入
+    //     setWeatherElement({
+    //         ...currentWeather,
+    //         ...weatherForecast,
+    //         isLoading: false,
+    //     });
+    // };
+
+    // STEP 2：在 useEffect 中呼叫 fetchData
+
+
+    // useCallback 中可以放入函式，這裡可以把原本 fetchData 做的事放入 useCallback 的函式中
+    const fetchData = useCallback(async () => {
+        // setWeatherElement((prevState) => (/* ... */);
+        // ...
+        // 在開始拉取資料前，先把 isLoading 的狀態改成 true
+        setWeatherElement((prevState) => ({
+            ...prevState,
+            isLoading: true,
+        }));
+        // 直接透過陣列的解構賦值來取出 Promise.all 回傳的資料
+        const [currentWeather, weatherForecast] = await Promise.all([
+            fetchCurrentWeather(),
+            fetchWeatherForecast(),
+        ]);
+
+        // 把取得的資料透過物件的解構賦值放入
+        setWeatherElement({
+            ...currentWeather,
+            ...weatherForecast,
+            isLoading: false,
+        });
+    }, []);
+
 
 
     return (
@@ -360,23 +410,25 @@ const App = () => {
                         <Temperature>
                             {/*{Math.round(Number(temperature))}*/}
                             {temperature} <Celsius>°C</Celsius>
-                            {console.log(`temperature`,temperature)}
+                            {console.log(`temperature`, temperature)}
                         </Temperature>
-                        <DayCloudy/>
+                        <DayCloudy />
                     </CurrentWeather>
                     <AirFlow>
-                        <AirFlowIcon/> {windSpeed} m/h
+                        <AirFlowIcon /> {windSpeed} m/h
                     </AirFlow>
                     <Rain>
-                        <RainIcon/> {rainPossibility}%
+                        <RainIcon /> {rainPossibility}%
                     </Rain>
                     {/* STEP 2：綁定 onClick 時會呼叫 handleClick 方法 */}
+                    {/* STEP 3：在 onClick 中呼叫 fetchData */}
                     <Refresh
-                        onClick={() => {
-                            fetchCurrentWeather();
-                            fetchWeatherForecast();
+                        // onClick={() => {
+                        //     fetchCurrentWeather();
+                        //     fetchWeatherForecast();
 
-                        }}
+                        // }}
+                        onClick={fetchData}
                         isLoading={isLoading}>
                         {/*    最後觀測時間：*/}
                         {/*    {new Intl.DateTimeFormat('zh-TW', {*/}
@@ -389,7 +441,7 @@ const App = () => {
                             minute: 'numeric',
                         }).format(dayjs(observationTime))}{' '}
                         {/*<RefreshIcon/>*/}
-                        {isLoading ? <LoadingIcon/> : <RefreshIcon/>}
+                        {isLoading ? <LoadingIcon /> : <RefreshIcon />}
                     </Refresh>
                 </WeatherCard>
             </Container>
