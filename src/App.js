@@ -288,6 +288,7 @@ const App = () => {
         isLoading,
         // description,
         comfortability,
+        weatherCode, // 從 weatherElement 中取出 weatherCode 資料
     } = weatherElement;
 
     const LOCATION_NAME_FORECAST = '臺北市';//%E8%87%BA%E5%8C%97%E5%B8%82
@@ -416,7 +417,8 @@ const App = () => {
                         </Temperature>
                         {/* WeatherIcon */}
                         {/* STEP 2：使用 WeatherIcon 元件 */}
-                        <WeatherIcon />
+                        {/* 將 weatherCode 和 moment 以 props 傳入 WeatherIcon */}
+                        <WeatherIcon weatherCode={weatherCode} moment="night"/>
                         {/* <DayCloudy /> */}
                     </CurrentWeather>
                     <AirFlow>

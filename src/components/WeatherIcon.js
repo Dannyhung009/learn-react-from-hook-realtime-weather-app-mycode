@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useMemo } from 'react';
 import styled from '@emotion/styled';
 import { ReactComponent as DayThunderstorm } from './../images/day-thunderstorm.svg';
 import { ReactComponent as DayClear } from './../images/day-clear.svg';
@@ -100,13 +101,32 @@ const weatherCode = 1;
 console.log(weatherCode2Type(weatherCode)); // isClear
 
 
-const WeatherIcon = () => {
-  return (
-    <IconContainer>
-      {/*<DayCloudyIcon />*/}
-        <DayCloudy/>
-    </IconContainer>
-  );
+const WeatherIcon = ({ weatherCode, moment }) => {
+    // return (
+    //   <IconContainer>
+    //     {/*<DayCloudyIcon />*/}
+    //       <DayCloudy/>
+    //
+    //   </IconContainer>
+    // );
+    //=================
+    // const weatherType = weatherCode2Type(weatherCode); // 將天氣代碼轉成天氣型態
+    // const weatherIcon = weatherIcons[moment][weatherType]; // 根據天氣型態和 moment 取得對應的圖示
+    // return <IconContainer>{weatherIcon}</IconContainer>;
+
+//================
+    // 使用 useMemo
+    // const weatherType = useMemo(() => weatherCode2Type(weatherCode));
+    // 記得要使用 useMemo 的 dependencies 陣列
+    const weatherType = useMemo(() => weatherCode2Type(weatherCode), [
+        weatherCode,
+    ]);
+
+    const weatherIcon = weatherIcons[moment][weatherType];
+
+
+
+    return <IconContainer>{weatherIcon}</IconContainer>;
 }
 
 export default WeatherIcon;
