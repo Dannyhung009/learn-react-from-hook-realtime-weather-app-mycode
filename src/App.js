@@ -1,7 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
+import React,{useEffect, useState, useCallback, useMemo} from 'react';
 import styled from '@emotion/styled';
 import { ThemeProvider } from '@emotion/react'
 import dayjs from 'dayjs';
+import { getMoment } from './utils/helpers';
 
 
 import { ReactComponent as AirFlowIcon } from './images/airFlow.svg';
@@ -397,6 +398,17 @@ const App = () => {
     }, []);
 
 
+    // const moment = getMoment(LOCATION_NAME_FORECAST);
+
+    // TODO: 等使用者可以修改地區時要修改裡面的參數，先將 dependencies array 設為空陣列
+    const moment = useMemo(() => getMoment(LOCATION_NAME_FORECAST), []);
+
+    useEffect(() => {
+        // 根據 moment 決定要使用亮色或暗色主題
+        setCurrentTheme(moment === 'day' ? 'light' : 'dark');
+    }, [moment]); // 記得把 moment 放入 dependencies 中
+
+
 
     return (
         <ThemeProvider theme={theme[currentTheme]}>
@@ -415,11 +427,16 @@ const App = () => {
                             {temperature} <Celsius>°C</Celsius>
                             {console.log(`temperature`, temperature)}
                         </Temperature>
+                        {/* <DayCloudy /> */}
                         {/* WeatherIcon */}
                         {/* STEP 2：使用 WeatherIcon 元件 */}
                         {/* 將 weatherCode 和 moment 以 props 傳入 WeatherIcon */}
-                        <WeatherIcon weatherCode={weatherCode} moment="night"/>
-                        {/* <DayCloudy /> */}
+                        {/*<WeatherIcon weatherCode={weatherCode} moment="night"/>*/}
+
+
+                        { /* 把 moment 的值改成真是資料 */}
+
+                        <WeatherIcon weatherCode={weatherCode} moment={moment} />;
                     </CurrentWeather>
                     <AirFlow>
                         <AirFlowIcon /> {windSpeed} m/h
